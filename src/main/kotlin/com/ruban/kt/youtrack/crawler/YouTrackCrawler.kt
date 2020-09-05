@@ -1,12 +1,11 @@
 package com.ruban.kt.youtrack.crawler
 
-import com.ruban.kt.youtrack.crawler.requests.RequestNothing
 import java.net.URL
 import org.json.JSONArray
 import org.json.JSONObject
 
 class YouTrackCrawler(
-    private val requestDetails: RequestDetails = RequestNothing,
+    private val requestDetails: RequestDetails = RequestDetails(),
     private val query: String? = null,
     private val handlers: List<IssueHandler> = emptyList()
 ) {
@@ -42,7 +41,9 @@ class YouTrackCrawler(
     }
 
     fun test() {
-        println(getIssues(top = 4, skip = 0))
+        println(requestDetails)
+        val issues = getIssues(top = 1, skip = 0)
+        println(issues)
         val top = 10000
         var skip = 0
         var lastNumberOfIssues = top

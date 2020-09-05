@@ -1,13 +1,13 @@
 package com.ruban.kt.youtrack.crawler
 
 open class RequestDetails(
-    val id: Boolean,
-    val summary: Boolean
+    vararg args: String
 ) {
+    private val fields = args.toList()
+
     override fun toString(): String {
         val stringBuilder = StringBuilder("fields=\$type")
-        if (id) stringBuilder.append(",id")
-        if (summary) stringBuilder.append(",summary")
+        fields.forEach { field -> stringBuilder.append(",$field") }
         return stringBuilder.toString()
     }
 }
