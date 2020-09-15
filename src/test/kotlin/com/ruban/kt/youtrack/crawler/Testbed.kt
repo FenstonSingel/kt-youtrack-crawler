@@ -1,9 +1,14 @@
 package com.ruban.kt.youtrack.crawler
 
+import com.ruban.kt.youtrack.crawler.handlers.*
+import org.apache.log4j.PropertyConfigurator
+
 fun main() {
+    PropertyConfigurator.configure("src/main/resources/log4j.properties")
+
     val crawler = YouTrackCrawler(
-        RequestDetails("idReadable"),
-        query = "project:Kotlin" + "%20" + "type:Bug" + "%20" + "state:Duplicate"
+        SourceCodeSearcher,
+        DataPrinter<List<String>>()
     )
-    crawler.test()
+    crawler.fetch()
 }
