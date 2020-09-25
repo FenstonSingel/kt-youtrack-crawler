@@ -3,9 +3,12 @@ package com.ruban.kt.youtrack.crawler
 import org.apache.log4j.Logger
 import org.json.JSONObject
 
-class YouTrackCrawler(private val handlers: List<DataHandler>) {
+class YouTrackCrawler
+private constructor(private val handlers: List<DataHandler>) {
 
     constructor(vararg handlers: DataHandler) : this(handlers.toList())
+
+    val properties: String
 
     fun fetch(): List<Any> {
         val currData = mutableListOf<Any>()
@@ -14,13 +17,12 @@ class YouTrackCrawler(private val handlers: List<DataHandler>) {
         for (handler in handlers) {
             logger.debug("Applying handler $handler ...")
             for (element in currData) {
-                val newElement = handler(element) ?: continue
-                newData += newElement
+                newData.addAll(handler(element))
             }
             currData.clear()
             currData.addAll(newData)
             newData.clear()
-            handler.finish()
+            currData.addAll(handler.finish())
         }
         return currData
     }
@@ -35,12 +37,10 @@ class YouTrackCrawler(private val handlers: List<DataHandler>) {
             val stringBuilder = StringBuilder("/api/issues?")
             stringBuilder.append("\$top=$top")
             stringBuilder.append("&\$skip=$skip")
-            stringBuilder.append(if (properties.isNotEmpty()) "&fields=\$this,$properties" else "")
-            stringBuilder.append(if (query.isNotEmpty()) "&query=$query" else "")
+            if (properties.isNotEmpty()) stringBuilder.append("&$properties")
+            if (query.isNotEmpty()) stringBuilder.append("&$query")
             val currIssues = YouTrackAccessor.requestJSONArray(stringBuilder.toString())
-            for (i in 0 until currIssues.length()) {
-                result += currIssues.getJSONObject(i)
-            }
+            result += currIssues.toJSONObjectList()
             lastNumberOfIssues = currIssues.length()
             skip += lastNumberOfIssues
         }
@@ -48,20 +48,20 @@ class YouTrackCrawler(private val handlers: List<DataHandler>) {
         return result
     }
 
-    private val properties: String
     private val query: String
 
-    private val logger: Logger = Logger.getLogger("generalLogger")
+    private val logger: Logger = Logger.getLogger("debugLogger")
 
     init {
         val initProperties = mutableSetOf<PropertyField>()
         val initQuery = mutableSetOf<QueryRequest>()
         for (handler in handlers) {
+            DataHandler.link(this, handler)
             initProperties += handler.propertyRequirements
             initQuery += handler.queryRequirements
         }
-        properties = initProperties.joinToString(",")
-        query = initQuery.joinToString("%20")
+        properties = "fields=\$this${if (initProperties.isNotEmpty()) ",${initProperties.joinToString(",")}" else ""}"
+        query = if (initQuery.isNotEmpty()) "query=${initQuery.joinToString("%20")}" else ""
         logger.debug("Final properties: $properties")
         logger.debug("Final query: $query")
     }

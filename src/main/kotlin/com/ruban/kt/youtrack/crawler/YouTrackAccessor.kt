@@ -29,6 +29,6 @@ object YouTrackAccessor {
 
     private const val baseURL = "https://youtrack.jetbrains.com"
 
-    private val logger: Logger = Logger.getLogger("generalLogger")
+    private val logger: Logger = Logger.getLogger("debugLogger")
 
 }

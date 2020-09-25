@@ -1,7 +1,8 @@
 package com.ruban.kt.youtrack.crawler.handlers
 
 import com.ruban.kt.youtrack.crawler.*
-import org.apache.log4j.Logger
+import com.ruban.kt.youtrack.crawler.data.*
+import org.json.JSONArray
 import org.json.JSONObject
 
 object SourceCodeSearcher : DataHandler() {
@@ -19,22 +20,24 @@ object SourceCodeSearcher : DataHandler() {
         QueryRequest("state" to "Duplicate")
     )
 
-    override fun invoke(data: Any): List<String>? {
-        data as JSONObject
+    override fun invoke(data: Any): List<SampleCandidate<String>> {
+        data as SampleCandidate<JSONObject>
+        val (jsonObject, groupID, versions) = data
+
         val candidates = mutableListOf<String>()
 
-        val id = data["id"] as String
-        (data["description"] as? String)?.let { description -> candidates.addAll(findCode(description)) }
+        val id = jsonObject["id"] as String
+        (jsonObject["description"] as? String)?.let { description -> candidates.addAll(findCode(description)) }
 
-        val comments = YouTrackAccessor.requestJSONArray("/api/issues/$id/comments?fields=text")
+        val source = YouTrackAccessor.requestJSONObject(
+            "/api/issues/$id?fields=comments(text),attachments(extension,url)"
+        )
+        val comments = (source["comments"] as JSONArray).toJSONObjectList()
         for (comment in comments) {
-            comment as JSONObject
             (comment["text"] as? String)?.let { text -> candidates.addAll(findCode(text)) }
         }
-
-        val attachments = YouTrackAccessor.requestJSONArray("/api/issues/$id/attachments?fields=extension,url")
+        val attachments = (source["attachments"] as JSONArray).toJSONObjectList()
         for (attachment in attachments) {
-            attachment as JSONObject
             val extension = attachment["extension"] as? String ?: continue
             val url = attachment["url"] as? String ?: continue
             if (extension in interestingExtensions) {
@@ -42,16 +45,25 @@ object SourceCodeSearcher : DataHandler() {
             }
         }
 
-        return if (candidates.isNotEmpty()) candidates else null
+        return candidates.map { candidate ->
+            SampleCandidate(
+                candidate,
+                groupID,
+                versions
+            )
+        }
     }
 
-    override fun finish() = Unit
-
-    // TODO
     private fun findCode(source: String): List<String> {
-        return listOf(source)
+        val result = mutableListOf<String>()
+        result.addAll(regexMarkdown.findAll(source).map { matchResult -> matchResult.groupValues[1] })
+        result.addAll(regexYouTrackWiki.findAll(source).map { matchResult -> matchResult.groupValues[1] })
+        return result
     }
 
     private val interestingExtensions = setOf("txt", "kt", "kts")
+
+    private val regexMarkdown = Regex("""(?:```.*?\n(.*?)```)""", RegexOption.DOT_MATCHES_ALL)
+    private val regexYouTrackWiki = Regex("""(?:\{code.*?}\n(.*?)\{code})""", RegexOption.DOT_MATCHES_ALL)
 
 }

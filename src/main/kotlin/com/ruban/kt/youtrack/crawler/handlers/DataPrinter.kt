@@ -1,29 +1,26 @@
 package com.ruban.kt.youtrack.crawler.handlers
 
 import com.ruban.kt.youtrack.crawler.DataHandler
-import com.ruban.kt.youtrack.crawler.PropertyField
-import com.ruban.kt.youtrack.crawler.QueryRequest
-import org.apache.log4j.Logger
-import java.io.PrintStream
 
-class DataPrinter<T>(
-    override val propertyRequirements: Set<PropertyField> = emptySet(),
-    override val queryRequirements: Set<QueryRequest> = emptySet(),
-    private val stream: PrintStream = System.out
+class DataPrinter<T : Any>(
+    private val printer: (String) -> Unit
 ) : DataHandler() {
 
-    override fun invoke(data: Any): T? {
+    override fun invoke(data: Any): List<T> {
         data as T
-        ++numberOfIssues
-        stream.println(data)
-        stream.println()
-        return data
+
+        ++numberOfDataObjects
+        printer(data.toString())
+
+        return listOf(data)
     }
 
-    override fun finish() {
-        stream.println("Number of data objects is $numberOfIssues.")
+    override fun finish(): List<T> {
+        printer("Number of data objects is $numberOfDataObjects.")
+        printer("")
+        return emptyList()
     }
 
-    private var numberOfIssues = 0
+    private var numberOfDataObjects = 0
 
 }

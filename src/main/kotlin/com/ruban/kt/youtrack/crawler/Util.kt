@@ -1,5 +1,8 @@
 package com.ruban.kt.youtrack.crawler
 
+import org.json.JSONArray
+import org.json.JSONObject
+
 operator fun MutableSet<PropertyField>.plusAssign(other: Set<PropertyField>) {
     val thisCopy = this.toSet()
     this.clear()
@@ -17,6 +20,14 @@ operator fun Set<PropertyField>.plus(other: Set<PropertyField>): Set<PropertyFie
             second == null -> first
             else -> first + second
         }
+    }
+    return result
+}
+
+fun JSONArray.toJSONObjectList(): List<JSONObject> {
+    val result = mutableListOf<JSONObject>()
+    for (i in 0 until length()) {
+        result += getJSONObject(i)
     }
     return result
 }

@@ -2,16 +2,20 @@ package com.ruban.kt.youtrack.crawler
 
 abstract class DataHandler {
 
-    abstract val propertyRequirements: Set<PropertyField>
-
-    abstract val queryRequirements: Set<QueryRequest>
-
-    abstract operator fun invoke(data: Any): Any?
-
-    abstract fun finish()
-
-    protected companion object {
-        const val conveyorError: String = "Handler conveyor was constructed improperly: types of data don't match."
+    companion object {
+        fun link(crawler: YouTrackCrawler, handler: DataHandler) {
+            handler.crawler = crawler
+        }
     }
+
+    open val propertyRequirements: Set<PropertyField> = emptySet()
+
+    open val queryRequirements: Set<QueryRequest> = emptySet()
+
+    open operator fun invoke(data: Any): Iterable<Any> = listOf(data)
+
+    open fun finish(): Iterable<Any> = emptyList()
+
+    protected lateinit var crawler: YouTrackCrawler
 
 }

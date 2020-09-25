@@ -1,0 +1,37 @@
+package com.ruban.kt.youtrack.crawler.data
+
+import org.jetbrains.kotlin.cli.common.messages.CompilerMessageLocation
+import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity
+import org.jetbrains.kotlin.cli.common.messages.MessageCollector
+
+object CompilerMsgCollector : MessageCollector {
+
+    var hasCrash = false
+    var hasCompilationError = false
+    var crashMessages = mutableListOf<String>()
+    var compilationErrorMessages = mutableListOf<String>()
+
+    override fun clear() {
+        hasCrash = false
+        hasCompilationError = false
+        crashMessages.clear()
+        compilationErrorMessages.clear()
+    }
+
+    override fun hasErrors(): Boolean {
+        return hasCrash
+    }
+
+    override fun report(severity: CompilerMessageSeverity, message: String, location: CompilerMessageLocation?) {
+        if (severity == CompilerMessageSeverity.EXCEPTION) {
+            hasCrash = true
+            crashMessages.add(message)
+        }
+        if (severity == CompilerMessageSeverity.ERROR) {
+            hasCompilationError = true
+            compilationErrorMessages.add(message)
+        }
+
+    }
+
+}
