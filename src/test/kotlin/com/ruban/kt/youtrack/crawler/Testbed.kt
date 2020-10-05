@@ -19,6 +19,7 @@ fun main() {
         DataPrinter<SampleCandidate<JSONObject>>(log),
         VersionsCounter(log),
         SourceCodeSearcher, // SampleCandidate<JSONObject> -> SampleCandidate<String>
+        TextLengthFilter, // SampleCandidate<String> -> SampleCandidate<String>
         DataPrinter<SampleCandidate<String>>(log),
         VersionsCounter(log),
         CompilingFilter(), // SampleCandidate<String> -> SampleCandidate<String>
