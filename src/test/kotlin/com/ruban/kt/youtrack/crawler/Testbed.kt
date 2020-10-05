@@ -24,7 +24,7 @@ fun main() {
         CompilingFilter(), // SampleCandidate<String> -> SampleCandidate<String>
         DataPrinter<SampleCandidate<String>>(log),
         VersionsCounter(log),
-        SampleExporter("/home/ruban/kotlin-samples/ground-truth")
+        SampleExporter("/home/ruban/kotlin-samples/ground-truth-download")
     )
     crawler.fetch()
 
