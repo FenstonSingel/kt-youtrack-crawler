@@ -30,25 +30,26 @@ object DuplicateGroupsCreator : DataHandler() {
         data as JSONObject
 
         val links = (data["links"] as JSONArray).toJSONObjectList()
+
         val duplicateLink = links.find { link ->
-            val linkType = link["linkType"] as JSONObject
-            linkType["name"] as String == "Duplicate" && link["direction"] as String == "INWARD"
+            (link["linkType"] as JSONObject)["name"] as String == "Duplicate" && link["direction"] as String == "INWARD"
         }!!
-        val issues = (duplicateLink["issues"] as JSONArray).toJSONObjectList()
-        if (issues.isEmpty()) return emptyList()
-        val parentIssueID = issues[0]["id"] as String
+        val duplicatedIssueList = (duplicateLink["issues"] as JSONArray).toJSONObjectList()
+        if (duplicatedIssueList.isEmpty()) return emptyList()
+        val duplicatedIssueID = duplicatedIssueList[0]["id"] as String
 
-        val parentIssue = YouTrackAccessor.requestJSONObject("/api/issues/$parentIssueID?${crawler.properties}")
-        val parentIDReadable = (parentIssue["idReadable"] as String)
-        if (parentIDReadable.startsWith("KT-")) {
-            parents += JSONObjectDistinguishableByID(parentIDReadable, parentIssue)
+        val duplicatedIssue = YouTrackAccessor.requestJSONObject("/api/issues/$duplicatedIssueID?${crawler.properties}")
+        val duplicatedIssueIDReadable = duplicatedIssue["idReadable"] as String
+        return if (duplicatedIssueIDReadable.startsWith("KT-")) {
+            duplicatedIssues += JSONObjectDistinguishableByID(duplicatedIssueIDReadable, duplicatedIssue)
+            listOf(SampleCandidate(data, data["idReadable"] as String, duplicatedIssueIDReadable))
+        } else {
+            emptyList()
         }
-
-        return listOf(SampleCandidate(data, parentIDReadable))
     }
 
     override fun finish(): List<SampleCandidate<JSONObject>> {
-        return parents.map { obj -> SampleCandidate(obj.data, obj.id) }
+        return duplicatedIssues.map { obj -> SampleCandidate(obj.data, obj.id, obj.id) }
     }
 
     private class JSONObjectDistinguishableByID(val id: String, val data: JSONObject) {
@@ -68,6 +69,6 @@ object DuplicateGroupsCreator : DataHandler() {
         }
     }
 
-    private val parents = mutableSetOf<JSONObjectDistinguishableByID>()
+    private val duplicatedIssues = mutableSetOf<JSONObjectDistinguishableByID>()
 
 }

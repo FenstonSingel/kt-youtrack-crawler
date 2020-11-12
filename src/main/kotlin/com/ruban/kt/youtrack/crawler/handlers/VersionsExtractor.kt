@@ -37,7 +37,7 @@ object VersionsExtractor : DataHandler() {
         } ?: return emptyList()
         val versions = (versionsJSON["value"] as JSONArray).toJSONObjectList().map { obj -> obj["name"] as String }
 
-        return listOf(SampleCandidate(data.content, data.group, versions))
+        return listOf(SampleCandidate(data.content, data.id, data.group, versions, data.parent))
     }
 
 }

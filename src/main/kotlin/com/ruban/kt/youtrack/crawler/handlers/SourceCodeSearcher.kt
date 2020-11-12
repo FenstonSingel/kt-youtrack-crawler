@@ -22,11 +22,10 @@ object SourceCodeSearcher : DataHandler() {
 
     override fun invoke(data: Any): List<SampleCandidate<String>> {
         data as SampleCandidate<JSONObject>
-        val (jsonObject, groupID, versions) = data
+        val (jsonObject, id, groupID, versions, parent) = data
 
         val candidates = mutableListOf<String>()
 
-        val id = jsonObject["id"] as String
         (jsonObject["description"] as? String)?.let { description -> candidates.addAll(findCode(description)) }
 
         val source = YouTrackAccessor.requestJSONObject(
@@ -48,8 +47,10 @@ object SourceCodeSearcher : DataHandler() {
         return candidates.map { candidate ->
             SampleCandidate(
                 candidate,
+                id,
                 groupID,
-                versions
+                versions,
+                parent
             )
         }
     }

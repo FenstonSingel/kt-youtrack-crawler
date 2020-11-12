@@ -28,7 +28,7 @@ class CompilingFilter(compilerArgs: String = "") : DataHandler() {
             CompilerMsgCollector.hasCompilationError -> "incorrect code"
             else -> "correct code"
         }
-        logger.debug("Result: $result")
+        logger.debug("Result: $result\n")
 
         return if (CompilerMsgCollector.hasErrors()) listOf(data) else emptyList()
     }

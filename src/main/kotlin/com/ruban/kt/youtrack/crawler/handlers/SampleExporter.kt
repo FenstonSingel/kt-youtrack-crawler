@@ -14,7 +14,7 @@ class SampleExporter(
         val groupFile = File("$dirPath/${data.group}")
         groupFile.mkdirs()
         val sampleNumber = (groupFile.listFiles()?.size ?: 0) + 1
-        val annotatedContent = "// Parent bug: ${data.group}\n\n${data.content}"
+        val annotatedContent = "// Original bug: ${data.id}\n// Duplicated bug: ${data.group}\n\n${data.content}"
         File("$dirPath/${data.group}/$sampleNumber.kt").writeText(annotatedContent)
 
         return listOf(data)

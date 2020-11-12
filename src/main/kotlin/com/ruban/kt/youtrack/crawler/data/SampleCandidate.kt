@@ -1,3 +1,9 @@
 package com.ruban.kt.youtrack.crawler.data
 
-data class SampleCandidate<T>(val content: T, val group: String, val versions: List<String> = emptyList())
+data class SampleCandidate<T>(
+    val content: T,
+    val id: String,
+    val group: String,
+    val versions: List<String> = emptyList(),
+    val parent: String? = null
+)

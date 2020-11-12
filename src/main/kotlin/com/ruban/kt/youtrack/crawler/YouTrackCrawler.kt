@@ -2,6 +2,7 @@ package com.ruban.kt.youtrack.crawler
 
 import org.apache.log4j.Logger
 import org.json.JSONObject
+import java.lang.Integer.min
 
 class YouTrackCrawler
 private constructor(private val handlers: List<DataHandler>) {
@@ -10,9 +11,9 @@ private constructor(private val handlers: List<DataHandler>) {
 
     val properties: String
 
-    fun fetch(): List<Any> {
+    fun fetch(numberOfIssues: Int = Int.MAX_VALUE): List<Any> {
         val currData = mutableListOf<Any>()
-        currData.addAll(getAllIssues())
+        currData.addAll(getIssues(numberOfIssues))
         val newData = mutableListOf<Any>()
         for (handler in handlers) {
             logger.debug("Applying handler $handler ...")
@@ -27,13 +28,13 @@ private constructor(private val handlers: List<DataHandler>) {
         return currData
     }
 
-    private fun getAllIssues(): List<JSONObject> {
+    private fun getIssues(numberOfIssues: Int): List<JSONObject> {
         val result = mutableListOf<JSONObject>()
-        val top = 10000
+        val top = min(numberOfIssues, 10000)
         var skip = 0
         var lastNumberOfIssues = top
         logger.debug("Starting to fetch issues from YouTrack ...")
-        while (lastNumberOfIssues == top) {
+        while (lastNumberOfIssues == top && skip < numberOfIssues) {
             val stringBuilder = StringBuilder("/api/issues?")
             stringBuilder.append("\$top=$top")
             stringBuilder.append("&\$skip=$skip")
