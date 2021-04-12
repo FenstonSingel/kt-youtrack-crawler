@@ -11,11 +11,16 @@ class SampleExporter(
     override fun invoke(data: Any): List<SampleCandidate<String>> {
         data as SampleCandidate<String>
 
-        val groupFile = File("$dirPath/${data.group}")
+        val groupFilePath = if (data.group != null) "$dirPath/${data.group}" else dirPath
+        val groupFile = File(groupFilePath)
         groupFile.mkdirs()
         val sampleNumber = (groupFile.listFiles()?.size ?: 0) + 1
-        val annotatedContent = "// Original bug: ${data.id}\n// Duplicated bug: ${data.group}\n\n${data.content}"
-        File("$dirPath/${data.group}/$sampleNumber.kt").writeText(annotatedContent)
+        val annotatedContent = with(StringBuilder()) {
+            append("// Original bug: ${data.id}\n")
+            if (data.group != null) append("// Duplicated bug: ${data.group}\n")
+            append("\n${data.content}")
+        }.toString()
+        File("$groupFilePath/$sampleNumber.kt").writeText(annotatedContent)
 
         return listOf(data)
     }

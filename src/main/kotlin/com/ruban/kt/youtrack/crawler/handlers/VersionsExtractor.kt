@@ -24,8 +24,7 @@ object VersionsExtractor : DataHandler() {
     )
 
     override val queryRequirements = setOf(
-        QueryRequest("project" to "Kotlin"),
-        QueryRequest("state" to "Duplicate")
+        QueryRequest("project" to "Kotlin")
     )
 
     override fun invoke(data: Any): List<SampleCandidate<JSONObject>> {

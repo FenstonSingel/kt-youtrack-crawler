@@ -2,7 +2,9 @@ package com.ruban.kt.youtrack.crawler.handlers
 
 import com.ruban.kt.youtrack.crawler.DataHandler
 import com.ruban.kt.youtrack.crawler.data.CompilerMsgCollector
+import com.ruban.kt.youtrack.crawler.data.IssueCompilationStatistics
 import com.ruban.kt.youtrack.crawler.data.SampleCandidate
+import com.ruban.kt.youtrack.crawler.data.SampleCompilationType
 import org.apache.commons.io.FileUtils
 import org.apache.log4j.Logger
 import org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments
@@ -11,7 +13,7 @@ import org.jetbrains.kotlin.config.IncrementalCompilation
 import org.jetbrains.kotlin.config.Services
 import java.io.File
 
-class CompilingFilter(compilerArgs: String = "") : DataHandler() {
+class CompilingFilter(private val option: SampleCompilationType, compilerArgs: String = "") : DataHandler() {
 
     override operator fun invoke(data: Any): List<SampleCandidate<String>> {
         data as SampleCandidate<String>
@@ -24,13 +26,18 @@ class CompilingFilter(compilerArgs: String = "") : DataHandler() {
         logger.debug(data.content)
         compiler.exec(CompilerMsgCollector, Services.EMPTY, arguments)
         val result = when {
-            CompilerMsgCollector.hasCrash -> "crash!"
-            CompilerMsgCollector.hasCompilationError -> "incorrect code"
-            else -> "correct code"
+            CompilerMsgCollector.hasCrash -> SampleCompilationType.CRASH
+            CompilerMsgCollector.hasCompilationError -> SampleCompilationType.INCORRECT
+            else -> SampleCompilationType.CORRECT
         }
         logger.debug("Result: $result\n")
+        IssueCompilationStatistics.addCompilationResult(data.id, result)
 
-        return if (CompilerMsgCollector.hasErrors()) listOf(data) else emptyList()
+        return when (option) {
+            SampleCompilationType.CRASH -> if (CompilerMsgCollector.hasCrash) listOf(data) else emptyList()
+            SampleCompilationType.INCORRECT -> if (CompilerMsgCollector.hasCompilationError) listOf(data) else emptyList()
+            SampleCompilationType.CORRECT -> if (CompilerMsgCollector.isCorrect()) listOf(data) else emptyList()
+        }
     }
 
     private val compiler = K2JVMCompiler()

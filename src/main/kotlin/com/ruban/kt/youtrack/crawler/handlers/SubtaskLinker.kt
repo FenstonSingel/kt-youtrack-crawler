@@ -22,8 +22,7 @@ object SubtaskLinker : DataHandler() {
     )
 
     override val queryRequirements = setOf(
-        QueryRequest("project" to "Kotlin"),
-        QueryRequest("state" to "Duplicate")
+        QueryRequest("project" to "Kotlin")
     )
 
     override fun invoke(data: Any): List<SampleCandidate<JSONObject>> {
@@ -44,10 +43,6 @@ object SubtaskLinker : DataHandler() {
         }
 
         return listOf(SampleCandidate(jsonObject, id, group, parent = parentIssueIDReadable))
-    }
-
-    override fun finish(): List<SampleCandidate<JSONObject>> {
-        return emptyList()
     }
 
 }

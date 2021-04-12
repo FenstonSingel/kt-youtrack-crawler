@@ -11,6 +11,7 @@ object YouTrackAccessor {
     fun requestJSONArray(content: String): JSONArray = JSONArray(fetchData(content))
 
     fun fetchData(content: String): String {
+        Thread.sleep(throttlingDelay)
         logger.debug("Fetching data from $content ...")
         val url = URL("$baseURL$content")
         val connection = url.openConnection()
@@ -26,6 +27,8 @@ object YouTrackAccessor {
         }
         return stringBuilder.toString()
     }
+
+    var throttlingDelay = 0L
 
     private const val baseURL = "https://youtrack.jetbrains.com"
 

@@ -42,6 +42,7 @@ object DuplicateGroupsCreator : DataHandler() {
         val duplicatedIssueIDReadable = duplicatedIssue["idReadable"] as String
         return if (duplicatedIssueIDReadable.startsWith("KT-")) {
             duplicatedIssues += JSONObjectDistinguishableByID(duplicatedIssueIDReadable, duplicatedIssue)
+            IssueCompilationStatistics.registerIssue(data["idReadable"] as String)
             listOf(SampleCandidate(data, data["idReadable"] as String, duplicatedIssueIDReadable))
         } else {
             emptyList()
@@ -49,6 +50,7 @@ object DuplicateGroupsCreator : DataHandler() {
     }
 
     override fun finish(): List<SampleCandidate<JSONObject>> {
+        duplicatedIssues.forEach { issue -> IssueCompilationStatistics.registerIssue(issue.id) }
         return duplicatedIssues.map { obj -> SampleCandidate(obj.data, obj.id, obj.id) }
     }
 
